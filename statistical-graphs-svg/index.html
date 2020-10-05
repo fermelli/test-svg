@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistical Graphs SVG</title>
+  <style>
+    path:hover {
+      opacity: 0.8;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      border: 1px solid rgb(114, 109, 109);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="flex">
+      <div class="item-flex">
+        <!-- <controls-data @add-new-datum="addNewDatum"></controls-data> -->
+        <table>
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Label</th>
+              <th>Value</th>
+              <th>Color</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(datum, indexDatum) in data">
+              <td>{{ indexDatum + 1 }}</td>
+              <td><input type="text" v-model="datum.label" placeholder="Label" required></td>
+              <td>{{ datum.value }}</td>
+              <td><input type="color" v-model="datum.color" required></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="item-flex">
+        <circle-graph :cx="260" :cy="260" :r="200" :data="data" />
+      </div>
+    </div>
+  </div>
+
+  <script type="text/x-template" id="circle-graph">
+    <svg width="520" height="520">
+      <template v-if="data.length === 1 && data[0].value === 1">
+        <circle :cx="cx" :cy="cy" :r="r" :fill="data[0].color" />
+        <text :x="cx" :y="cy">{{ `${data[0].label} - ${data[0].value * 100}%` }}</text>
+      </template>
+      <template v-else>
+        <path v-for="(datum, indexDatum) in data" :d="d(indexDatum)" :fill="datum.color" />
+        <text v-for="(datum, indexDatum) in data" :x="cx + x(indexDatum)" :y="cy + y(indexDatum)">{{ `${datum.label} - ${(datum.value * 100).toFixed(2)}%` }}</text>
+      </template>
+    </svg>
+  </script>
+
+  <script type="text/x-template" id="controls-data">
+    <form @submit.prevent="emitAddNewDatum">
+      <div>
+        <label>Label</label>
+        <input type="text" v-model="label" placeholder="Label" required>
+      </div>
+      <div>
+        <label>Value</label>
+        <input type="number" v-model.number="value" min="0" max="1" step="0.0001" required>
+      </div>
+      <div>
+        <label>Color</label>
+        <input type="color" v-model="color" required>
+      </div>
+      <div>
+        <input type="submit" value="Submit">
+      </div>
+    </form>
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    Vue.component('controls-data', {
+      template: '#controls-data',
+      data() {
+        return {
+          label: '',
+          value: 0,
+          color: '#aaffee'
+        }
+      },
+      methods: {
+        emitAddNewDatum() {
+          let newDatum = {
+            label: this.label,
+            value: this.value,
+            color: this.color
+          }
+          this.$emit('add-new-datum', newDatum)
+          this.label = ''
+          this.value = 0
+          this.color = '#aaffee'
+        }
+      }
+    })
+
+    Vue.component('circle-graph', {
+      template: '#circle-graph',
+      props: {
+        data: {
+          type: Array,
+          required: true
+        },
+        cx: {
+          type: Number,
+          required: true
+        },
+        cy: {
+          type: Number,
+          required: true
+        },
+        r: {
+          type: Number,
+          required: true
+        }
+      },
+      methods: {
+        accumulateValues(index) {
+          return this.data.filter((element, indexElement) => indexElement <= index)
+            .reduce((accumulator, currentElement) => accumulator + currentElement.value, 0)
+        },
+        calculateAngle(index) {
+          return this.accumulateValues(index) * 2 * Math.PI
+        },
+        x(index) {
+          return this.r * Math.cos(this.calculateAngle(index))
+        },
+        y(index) {
+          return this.r * Math.sin(this.calculateAngle(index))
+        },
+        d(index) {
+          return `
+            M ${this.cx} ${this.cy}
+            L ${this.cx + this.x(index - 1)} ${this.cy + this.y(index - 1)}
+            A ${this.r} ${this.r} 0 ${this.data[index].value > 0.50 ? 1 : 0} 1 ${this.cx + this.x(index)} ${this.cy + this.y(index)}
+            Z
+          `
+        }
+      },
+    })
+    new Vue({
+      el: '#app',
+      data: {
+        data: [
+          // {
+          //   label: 'A',
+          //   value: 1,
+          //   color: '#FF3254'
+          // },
+          {
+            label: 'A',
+            value: 0.2577,
+            color: '#FF3254'
+          },
+          {
+            label: 'B',
+            value: 0.1016,
+            color: '#53E05B'
+          },
+          {
+            label: 'C',
+            value: 0.3263,
+            color: '#E8CB3C'
+          },
+          {
+            label: 'D',
+            value: 0.1337,
+            color: '#D16541'
+          },
+          {
+            label: 'E',
+            value: 0.0827,
+            color: '#B83CE8'
+          },
+          {
+            label: 'F',
+            value: 0.0980,
+            color: '#3A94DE'
+          }
+        ]
+      },
+      methods: {
+        addNewDatum(newDatum) {
+          this.data.push(newDatum)
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

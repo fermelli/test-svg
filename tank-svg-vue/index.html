@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TANK</title>
+  <style>
+    .flex {
+      display: flex;
+    }
+
+    .item-flex {
+      padding: 15px;
+    }
+
+    button {
+      outline: none;
+      border: none;
+      padding: 10px;
+    }
+
+    .btn-select {
+      background-color: cadetblue;
+    }
+  </style>
+</head>
+
+<body>
+  <template id="tank-grafic">
+    <svg id="tank-svg" xmlns="http://www.w3.org/2000/svg" :width="widthSvg" height="100%" viewBox="0 0 600 380">
+      <rect id="tank" width="100%" :height="HEIGHT_TANK_OF_ORIGINAL_GRAPHIC" transform="translate(0 45)"
+        fill="#c9fbef" />
+      <rect id="flow" width="100%" :height="fluidHeight" transform="translate(0 45)" fill="#e5e5e5" />
+      <path id="sides"
+        d="M-60,222h-50V72.708c.074,16.91,2.7,35.2,7.813,54.37A325.757,325.757,0,0,0-85,175.125c6.457,14.528,12.91,26.5,17.187,33.985C-63.179,217.219-60.031,221.953-60,222Zm550,0H440c.023-.035,3.179-4.782,7.812-12.891,4.277-7.485,10.731-19.457,17.187-33.985a325.757,325.757,0,0,0,17.187-48.047c5.1-19.126,7.728-37.382,7.81-54.26L490,222ZM-110,71.291h0V-78h50c-.029.046-3.14,4.717-7.812,12.892C-72.09-57.625-78.543-45.653-85-31.125a325.757,325.757,0,0,0-17.187,48.047C-107.3,36.09-109.927,54.382-110,71.291Zm600-.108h0c-.082-16.878-2.71-35.134-7.81-54.262A325.759,325.759,0,0,0,465-31.125c-6.457-14.528-12.91-26.5-17.187-33.985C443.219-73.148,440.13-77.8,440-78h50Z"
+        transform="translate(110 123.001)" fill="#fff" />
+      <path id="left-support" d="M798,737h60l-10,25H808Z" transform="translate(-648 -382)" fill="#e5e5e5" />
+      <path id="right-support" d="M798,737h60l-10,25H808Z" transform="translate(-408 -382)" fill="#e5e5e5" />
+      <path id="top" d="M25,0H275a25,25,0,0,1,25,25V35a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V25A25,25,0,0,1,25,0Z"
+        transform="translate(150)" fill="#e5e5e5" />
+      <text id="level-label" transform="translate(281 114)" fill="#707070" font-size="20"
+        font-family="Roboto-Medium, Roboto" font-weight="500">
+        <tspan x="-62.5" y="0">LEVEL:</tspan>
+      </text>
+      <text id="level-value" transform="translate(396 114)" fill="#707070" font-size="20"
+        font-family="Roboto-Regular, Roboto">
+        <tspan x="-93.32" y="0">{{ level }}</tspan>
+      </text>
+      <text id="percentage-label" transform="translate(281 153)" fill="#707070" font-size="20"
+        font-family="Roboto-Medium, Roboto" font-weight="500">
+        <tspan x="-49.629" y="0">PERC:</tspan>
+      </text>
+      <text id="percentage-value" transform="translate(396 153)" fill="#707070" font-size="20"
+        font-family="Roboto-Regular, Roboto">
+        <tspan x="-53.604" y="0">{{ percentage }}</tspan>
+      </text>
+      <text id="content-label" transform="translate(300 25)" fill="#707070" font-size="20"
+        font-family="Roboto-Bold, Roboto" font-weight="700">
+        <tspan x="-32.227" y="0">{{ fluid.name }}</tspan>
+      </text>
+    </svg>
+
+  </template>
+  <div id="app">
+    <div class="container">
+      <div class="flex">
+        <div class="item-flex">
+          <div class="grafic">
+            Chart Size:
+            <button v-for="size in sizes" @click="resizeChart(size)"
+              :class="{ 'btn-select': size == widthSvg }">{{ size }}</button>
+          </div>
+          <tank-grafic :fluid="fluid" :width-svg="widthSvg" :tank="tank"></tank-grafic>
+        </div>
+        <div class="item-flex">
+          <h3>DATA</h3>
+          <div class="range">
+            <span>0</span>
+            <input type="range" v-model="fluid.quantity" min="0" :max="tank.capacity" step="0.1">
+            <span>{{ tank.capacity }}</span>
+          </div>
+          <div class="info">
+            Capacity: <span>{{ tank.capacity }}</span><br>
+            Fuel Name: <span>{{ fluid.name }}</span><br>
+            Fuel Level: <span>{{ fluid.quantity }}</span><br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script>
+    Vue.component('tank-grafic', {
+      template: '#tank-grafic',
+      props: {
+        widthSvg: {
+          type: [String, Number],
+          default: 600
+        },
+        tank: {
+          type: Object,
+          required: true
+        },
+        fluid: {
+          type: Object,
+          required: true
+        },
+      },
+      data() {
+        return {
+          // WIDTH_OF_ORIGINAL_GRAPHIC: 600,
+          // HEIGHT_OF_ORIGINAL_GRAPHIC: 380,
+          HEIGHT_TANK_OF_ORIGINAL_GRAPHIC: 300
+        }
+      },
+      computed: {
+        fluidHeight() {
+          return (1 - (this.fluid.quantity / this.tank.capacity)) * this.HEIGHT_TANK_OF_ORIGINAL_GRAPHIC
+        },
+        level() {
+          return `${this.fluid.quantity} ${this.tank.unit}`
+        },
+        percentage() {
+          return `${((this.fluid.quantity / this.tank.capacity) * 100).toFixed(2)} %`
+        }
+      }
+    })
+    new Vue({
+      el: '#app',
+      data: {
+        widthSvg: 400,
+        tank: {
+          capacity: 6174,
+          unit: 'gal',
+        },
+        fluid: {
+          name: 'Diesel',
+          quantity: 3385,
+        },
+        sizes: [
+          400, 500, 600, 700, 800
+        ]
+      },
+      methods: {
+        resizeChart(size) {
+          this.widthSvg = size
+        }
+      }
+    });
+
+  </script>
+</body>
+
+</html>
