@@ -11,3 +11,5 @@ Pruebas con gráficos SVG
 ### Gráfico circular SVG
 
 ![captura - captura-statistical-graphs-svg](images/captura-statistical-graphs-svg.png)
+
+~~1-2020/independiente/test-svg~~
